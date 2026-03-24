@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Test</title>
+</head>
+<body>
+  <h1>Test API</h1>
+
+  <textarea id="notes" rows="6" cols="60" placeholder="Enter notes..."></textarea>
+  <br><br>
+  <button onclick="callAPI()">Get Themes</button>
+
+  <pre id="output"></pre>
+
+  <script>
+    async function callAPI() {
+      const notes = document.getElementById("notes").value;
+
+      const res = await fetch("https://script-trend-bias-analyzer.onrender.com", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          notes: notes,
+          days_back: 30
+        })
+      });
+
+      const data = await res.json();
+      document.getElementById("output").textContent =
+        JSON.stringify(data, null, 2);
+    }
+  </script>
+</body>
+</html>
