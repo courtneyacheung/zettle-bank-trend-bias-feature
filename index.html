@@ -381,7 +381,10 @@
       <section class="panel">
         <div class="panel-header">
           <h2 class="panel-title">Bias dashboard</h2>
-          <p class="panel-sub">Measure action-based and linguistic biases.</p>
+          <p class="panel-sub">Measure action-based and linguistic biases. <br> <br>Scoring:
+0 = none, 1 = minimal, 2 = mild, 3 = moderate, 4 = strong, 5 = pervasive
+<br> <br>
+"Insufficient evidence" indicates there is not enough relevant information to provide a score.</p>
         </div>
         <div class="panel-body results" id="biasOutput">
           <div class="result-card muted">No bias results yet.</div>
@@ -581,7 +584,7 @@
         biasOutput.innerHTML = `<div class="result-card muted">${escapeHtml(message)}</div>`;
       } finally {
         analyzeBtn.disabled = false;
-        analyzeBtn.textContent = 'Analyze with real-world context';
+        analyzeBtn.textContent = 'Analyze';
       }
     });
   </script>
