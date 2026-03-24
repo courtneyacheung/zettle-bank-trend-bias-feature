@@ -496,10 +496,15 @@ Scoring: 0 = none, 1 = minimal, 2 = mild, 3 = moderate, 4 = strong, 5 = pervasiv
     }
 
     function scoreClass(score) {
-      const s = String(score);
-      if (["0", "1", "2", "3", "4", "5"].includes(s)) return `score-${s}`;
-      return "score-na";
-    }
+        const s = Number(score);
+        if (Number.isNaN(s)) return "score-na";
+        if (s <= 0) return "score-0";
+        if (s <= 1) return "score-1";
+        if (s <= 2) return "score-2";
+        if (s <= 3) return "score-3";
+        if (s <= 4) return "score-4";
+        return "score-5";
+        }
 
     function renderBias(data) {
       if (!data) {
@@ -510,6 +515,13 @@ Scoring: 0 = none, 1 = minimal, 2 = mild, 3 = moderate, 4 = strong, 5 = pervasiv
       const b1 = data.bias_1 || {};
       const b2 = data.bias_2 || {};
 
+      const overallDisplayScore = data.overall_bias_score != null
+      ? Number(data.overall_bias_score) / 20
+      : null;
+
+      const bias1DisplayScore = b1.bias_1_score != null ? Number(b1.bias_1_score) : null;
+      const bias2DisplayScore = b2.bias_2_score != null ? Number(b2.bias_2_score) : null;
+      
       const subdim = (title, item) => {
         const score = item?.score ?? 'n/a';
         const evidence = Array.isArray(item?.evidence) ? item.evidence : [];
@@ -532,15 +544,21 @@ Scoring: 0 = none, 1 = minimal, 2 = mild, 3 = moderate, 4 = strong, 5 = pervasiv
         <div class="score-grid">
         <div class="score-box">
             <div class="score-label">Overall bias score</div>
-            <div class="score-value ${scoreClass(data.overall_bias_score)}">${escapeHtml(data.overall_bias_score ?? 'n/a')}</div>
+            <div class="score-value ${scoreClass(overallDisplayScore)}">
+            ${escapeHtml(overallDisplayScore != null ? overallDisplayScore.toFixed(1) : 'n/a')}
+            </div>
         </div>
         <div class="score-box">
             <div class="score-label">Bias 1 score</div>
-            <div class="score-value ${scoreClass(b1.bias_1_score)}">${escapeHtml(b1.bias_1_score ?? 'n/a')}</div>
+            <div class="score-value ${scoreClass(bias1DisplayScore)}">
+            ${escapeHtml(bias1DisplayScore != null ? bias1DisplayScore.toFixed(1) : 'n/a')}
+            </div>
         </div>
         <div class="score-box">
             <div class="score-label">Bias 2 score</div>
-            <div class="score-value ${scoreClass(b2.bias_2_score)}">${escapeHtml(b2.bias_2_score ?? 'n/a')}</div>
+            <div class="score-value ${scoreClass(bias2DisplayScore)}">
+            ${escapeHtml(bias2DisplayScore != null ? bias2DisplayScore.toFixed(1) : 'n/a')}
+            </div>
         </div>
         </div>
 
