@@ -495,16 +495,30 @@ Scoring: 0 = none, 1 = minimal, 2 = mild, 3 = moderate, 4 = strong, 5 = pervasiv
       `).join('');
     }
 
+    function toScore(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : null;
+    }
+
+    function normalizeOverallBias(value) {
+      const n = toScore(value);
+      if (n == null) return null;
+
+      // Supports either 0-100 or already 0-5
+      const scaled = n > 5 ? n / 20 : n;
+      return Math.max(0, Math.min(5, scaled));
+    }
+
     function scoreClass(score) {
-        const s = Number(score);
-        if (Number.isNaN(s)) return "score-na";
-        if (s <= 0) return "score-0";
-        if (s <= 1) return "score-1";
-        if (s <= 2) return "score-2";
-        if (s <= 3) return "score-3";
-        if (s <= 4) return "score-4";
-        return "score-5";
-        }
+      const s = toScore(score);
+      if (s == null) return "score-na";
+      if (s <= 0) return "score-0";
+      if (s < 1) return "score-1";
+      if (s < 2) return "score-2";
+      if (s < 3) return "score-3";
+      if (s < 4) return "score-4";
+      return "score-5";
+    }
 
     function renderBias(data) {
       if (!data) {
@@ -515,12 +529,9 @@ Scoring: 0 = none, 1 = minimal, 2 = mild, 3 = moderate, 4 = strong, 5 = pervasiv
       const b1 = data.bias_1 || {};
       const b2 = data.bias_2 || {};
 
-      const overallDisplayScore = data.overall_bias_score != null
-      ? Number(data.overall_bias_score) / 20
-      : null;
-
-      const bias1DisplayScore = b1.bias_1_score != null ? Number(b1.bias_1_score) : null;
-      const bias2DisplayScore = b2.bias_2_score != null ? Number(b2.bias_2_score) : null;
+      const overallDisplayScore = normalizeOverallBias(data.overall_bias_score);
+      const bias1DisplayScore = toScore(b1.bias_1_score);
+      const bias2DisplayScore = toScore(b2.bias_2_score);
       
       const subdim = (title, item) => {
         const score = item?.score ?? 'n/a';
