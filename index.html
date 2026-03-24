@@ -313,6 +313,14 @@
       letter-spacing: -0.05em;
     }
 
+    .score-value.score-0 { color: #14532d; }
+    .score-value.score-1 { color: #86efac; }
+    .score-value.score-2 { color: #facc15; }
+    .score-value.score-3 { color: #fb923c; }
+    .score-value.score-4 { color: #ea580c; }
+    .score-value.score-5 { color: #ef4444; }
+    .score-value.score-na { color: var(--muted); }
+
     .small {
       font-size: 0.86rem;
       color: var(--muted);
@@ -510,7 +518,7 @@ Scoring: 0 = none, 1 = minimal, 2 = mild, 3 = moderate, 4 = strong, 5 = pervasiv
           <div class="bias-item">
             <h4 class="bias-name">${escapeHtml(title)}</h4>
             <div class="meta-row">
-              <span class="tag ${scoreClass(score)}">Score: ${escapeHtml(score)}</span>
+              <span class="tag ${scoreClass(score)}">Score: ${escapeHtml(score === 'insufficient_evidence' ? 'inconclusive' : score)}</span>
             </div>
             <div class="small" style="margin-top: 10px;">Evidence</div>
             <div class="bias-copy" style="margin-top: 6px;">
@@ -522,18 +530,18 @@ Scoring: 0 = none, 1 = minimal, 2 = mild, 3 = moderate, 4 = strong, 5 = pervasiv
 
       biasOutput.innerHTML = `
         <div class="score-grid">
-          <div class="score-box">
+        <div class="score-box">
             <div class="score-label">Overall bias score</div>
-            <div class="score-value">${escapeHtml(data.overall_bias_score ?? 'n/a')}</div>
-          </div>
-          <div class="score-box">
+            <div class="score-value ${scoreClass(data.overall_bias_score)}">${escapeHtml(data.overall_bias_score ?? 'n/a')}</div>
+        </div>
+        <div class="score-box">
             <div class="score-label">Bias 1 score</div>
-            <div class="score-value">${escapeHtml(b1.bias_1_score ?? 'n/a')}</div>
-          </div>
-          <div class="score-box">
+            <div class="score-value ${scoreClass(b1.bias_1_score)}">${escapeHtml(b1.bias_1_score ?? 'n/a')}</div>
+        </div>
+        <div class="score-box">
             <div class="score-label">Bias 2 score</div>
-            <div class="score-value">${escapeHtml(b2.bias_2_score ?? 'n/a')}</div>
-          </div>
+            <div class="score-value ${scoreClass(b2.bias_2_score)}">${escapeHtml(b2.bias_2_score ?? 'n/a')}</div>
+        </div>
         </div>
 
         <div class="result-card">
