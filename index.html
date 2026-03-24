@@ -1,36 +1,589 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>API Test</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Analyzer</title>
+  <style>
+    :root {
+      --bg: #050814;
+      --panel: #0c1222;
+      --panel-2: #0f172a;
+      --border: rgba(255,255,255,0.08);
+      --text: #e5ecff;
+      --muted: #95a3c7;
+      --accent: #7c8cff;
+      --accent-2: #4dd0e1;
+      --good: #6ee7b7;
+      --warn: #fbbf24;
+      --danger: #fb7185;
+      --shadow: 0 22px 70px rgba(0, 0, 0, 0.35);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background:
+        radial-gradient(circle at top, rgba(124, 140, 255, 0.14), transparent 34%),
+        radial-gradient(circle at right, rgba(77, 208, 225, 0.10), transparent 28%),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    a { color: var(--accent-2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .wrap {
+      max-width: 1150px;
+      margin: 0 auto;
+      padding: 28px 18px 40px;
+    }
+
+    .hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+    }
+
+    .subtitle {
+      margin: 10px 0 0;
+      color: var(--muted);
+      max-width: 70ch;
+      line-height: 1.6;
+      font-size: 0.96rem;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    .dashboard {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: 1fr;
+    }
+
+    .panel-grid {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.05), rgba(255,255,255,0.03));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 16px 18px 14px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.12);
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 800;
+    }
+
+    .panel-sub {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.5;
+    }
+
+    .panel-body {
+      padding: 18px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    textarea, input, select {
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(8, 12, 24, 0.84);
+      color: var(--text);
+      padding: 13px 14px;
+      outline: none;
+      font: inherit;
+    }
+
+    textarea {
+      min-height: 220px;
+      resize: vertical;
+      line-height: 1.55;
+    }
+
+    textarea:focus, input:focus, select:focus {
+      border-color: rgba(124, 140, 255, 0.85);
+      box-shadow: 0 0 0 4px rgba(124, 140, 255, 0.14);
+    }
+
+    .control-row {
+      display: grid;
+      grid-template-columns: 1fr 180px;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    .actions {
+      margin-top: 14px;
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 13px 18px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s ease, opacity 0.15s ease, background 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-1px); }
+    button:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+
+    .primary {
+      color: #07101f;
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      min-width: 260px;
+    }
+
+    .secondary {
+      color: var(--text);
+      background: rgba(255,255,255,0.05);
+      border: 1px solid var(--border);
+    }
+
+    .status {
+      margin-top: 14px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--muted);
+      display: none;
+    }
+
+    .status.error {
+      display: block;
+      color: #fecaca;
+      border-color: rgba(251, 113, 133, 0.3);
+      background: rgba(251, 113, 133, 0.08);
+    }
+
+    .status.success {
+      display: block;
+      color: #bbf7d0;
+      border-color: rgba(110, 231, 183, 0.28);
+      background: rgba(110, 231, 183, 0.08);
+    }
+
+    .results {
+      display: grid;
+      gap: 18px;
+    }
+
+    .result-card {
+      background: rgba(8, 12, 24, 0.72);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 15px;
+    }
+
+    .result-title {
+      margin: 0 0 8px;
+      font-size: 1rem;
+      font-weight: 800;
+    }
+
+    .muted { color: var(--muted); }
+
+    .theme-list, .bias-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .theme-item, .bias-item {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .theme-name, .bias-name {
+      margin: 0;
+      font-weight: 800;
+      font-size: 1.02rem;
+    }
+
+    .theme-copy, .bias-copy {
+      margin: 10px 0 0;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      font-size: 0.82rem;
+    }
+
+    .tag.good { color: var(--good); }
+    .tag.warn { color: var(--warn); }
+    .tag.bad { color: var(--danger); }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .score-box {
+      padding: 14px;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(124, 140, 255, 0.14), rgba(77, 208, 225, 0.06));
+      border: 1px solid var(--border);
+    }
+
+    .score-label {
+      color: var(--muted);
+      font-size: 0.88rem;
+      margin-bottom: 6px;
+    }
+
+    .score-value {
+      font-size: 2rem;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+    }
+
+    .small {
+      font-size: 0.86rem;
+      color: var(--muted);
+    }
+
+    .link {
+      display: inline-block;
+      margin-top: 8px;
+      word-break: break-word;
+    }
+
+    @media (max-width: 920px) {
+      .hero, .panel-grid, .control-row, .score-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .pill-row {
+        justify-content: flex-start;
+      }
+
+      .primary {
+        width: 100%;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>Test API</h1>
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <h1>Analyze with real-world context</h1>
+        <p class="subtitle">
+          Grounding your script in real-world context. 
+        </p>
+      </div>
+    </div>
 
-  <textarea id="notes" rows="6" cols="60" placeholder="Enter notes..."></textarea>
-  <br><br>
-  <button onclick="callAPI()">Get Themes</button>
+    <div class="panel-grid">
+      <section class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Trends dashboard</h2>
+          <p class="panel-sub">How your script relates to current events and topics.</p>
+        </div>
+        <div class="panel-body">
+          <label for="inputText">Shared input</label>
+          <textarea id="inputText" placeholder="Paste notes or a script excerpt here..."></textarea>
 
-  <pre id="output"></pre>
+          <div class="control-row">
+            <div>
+              <label for="days">Days back</label>
+              <select id="days">
+                <option value="30">30 days</option>
+                <option value="50">50 days</option>
+                <option value="100">100 days</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="analyzeBtn" class="primary">Analyze</button>
+          </div>
+
+          <div id="status" class="status"></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Bias dashboard</h2>
+          <p class="panel-sub">Measure action-based and linguistic biases.</p>
+        </div>
+        <div class="panel-body results" id="biasOutput">
+          <div class="result-card muted">No bias results yet.</div>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel" style="margin-top: 18px;">
+      <div class="panel-header">
+        <h2 class="panel-title">Themes & real-world context</h2>
+        <p class="panel-sub">Three themes with readable context and clickable source links.</p>
+      </div>
+      <div class="panel-body results" id="themesOutput">
+        <div class="result-card muted">No theme results yet.</div>
+      </div>
+    </section>
+  </div>
 
   <script>
-    async function callAPI() {
-      const notes = document.getElementById("notes").value;
+    const API_BASE = "https://script-trend-bias-analyzer.onrender.com";
 
-      const res = await fetch("https://script-trend-bias-analyzer.onrender.com/themes-and-trends", {
+    const inputText = document.getElementById("inputText");
+    const days = document.getElementById("days");
+    const analyzeBtn = document.getElementById("analyzeBtn");
+    const statusEl = document.getElementById("status");
+    const themesOutput = document.getElementById("themesOutput");
+    const biasOutput = document.getElementById("biasOutput");
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function setStatus(type, message) {
+      statusEl.className = `status ${type}`.trim();
+      statusEl.textContent = message;
+      statusEl.style.display = "block";
+    }
+
+    function clearStatus() {
+      statusEl.className = "status";
+      statusEl.textContent = "";
+      statusEl.style.display = "none";
+    }
+
+    async function postJson(url, body) {
+      const res = await fetch(url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          notes: notes,
-          days_back: 30
-        })
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       });
 
-      const data = await res.json();
-      document.getElementById("output").textContent =
-        JSON.stringify(data, null, 2);
+      const raw = await res.text();
+      let data;
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        throw new Error(raw || `HTTP ${res.status}`);
+      }
+
+      if (!res.ok) {
+        throw new Error(data.detail || data.message || `HTTP ${res.status}`);
+      }
+
+      return data;
     }
+
+    function renderThemes(data) {
+      const themes = Array.isArray(data?.themes) ? data.themes : [];
+
+      if (!themes.length) {
+        themesOutput.innerHTML = '<div class="result-card muted">No themes returned.</div>';
+        return;
+      }
+
+      themesOutput.innerHTML = themes.map((item, index) => `
+        <article class="theme-item">
+          <h3 class="theme-name">${index + 1}. ${escapeHtml(item.theme || 'Untitled theme')}</h3>
+          <p class="theme-copy">${escapeHtml(item.relevance_blurb || '')}</p>
+
+          <div class="meta-row">
+            ${item.published_date ? `<span class="tag">Published: ${escapeHtml(item.published_date)}</span>` : ''}
+            ${item.source_type ? `<span class="tag">${escapeHtml(item.source_type)}</span>` : ''}
+            ${item.source_title ? `<span class="tag">${escapeHtml(item.source_title)}</span>` : ''}
+          </div>
+
+          <div class="small" style="margin-top: 12px;">Evidence note</div>
+          <div class="theme-copy" style="margin-top: 6px;">${escapeHtml(item.evidence_note || '')}</div>
+
+          <a class="link" href="${escapeHtml(item.source_url || '#')}" target="_blank" rel="noreferrer">Open source</a>
+        </article>
+      `).join('');
+    }
+
+    function renderBias(data) {
+      if (!data) {
+        biasOutput.innerHTML = '<div class="result-card muted">No bias results returned.</div>';
+        return;
+      }
+
+      const b1 = data.bias_1 || {};
+      const b2 = data.bias_2 || {};
+
+      const subdim = (title, item) => {
+        const score = item?.score ?? 'n/a';
+        const confidence = item?.confidence ?? 'n/a';
+        const evidence = Array.isArray(item?.evidence) ? item.evidence : [];
+
+        return `
+          <div class="bias-item">
+            <h4 class="bias-name">${escapeHtml(title)}</h4>
+            <div class="meta-row">
+              <span class="tag">Score: ${escapeHtml(score)}</span>
+              <span class="tag">Confidence: ${escapeHtml(confidence)}</span>
+            </div>
+            <div class="small" style="margin-top: 10px;">Evidence</div>
+            <div class="bias-copy" style="margin-top: 6px;">
+              ${evidence.length ? `<ul style="margin: 0; padding-left: 18px;">${evidence.map(e => `<li>${escapeHtml(e)}</li>`).join('')}</ul>` : '<span class="muted">No evidence provided.</span>'}
+            </div>
+          </div>
+        `;
+      };
+
+      biasOutput.innerHTML = `
+        <div class="score-grid">
+          <div class="score-box">
+            <div class="score-label">Overall bias score</div>
+            <div class="score-value">${escapeHtml(data.overall_bias_score ?? 'n/a')}</div>
+          </div>
+          <div class="score-box">
+            <div class="score-label">Bias 1 score</div>
+            <div class="score-value">${escapeHtml(b1.bias_1_score ?? 'n/a')}</div>
+          </div>
+          <div class="score-box">
+            <div class="score-label">Bias 2 score</div>
+            <div class="score-value">${escapeHtml(b2.bias_2_score ?? 'n/a')}</div>
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-title">Bias 1: Gendered Action</div>
+          <div class="bias-list">
+            ${subdim('Agency gap', b1.agency_gap)}
+            ${subdim('Gaze objectification', b1.gaze_objectification)}
+            ${subdim('Affection asymmetry', b1.affection_asymmetry)}
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-title">Bias 2: Linguistic</div>
+          <div class="bias-list">
+            ${subdim('Linguistic stereotyping', b2.linguistic_stereotyping)}
+            ${subdim('Dialogue power imbalance', b2.dialogue_power_imbalance)}
+          </div>
+        </div>
+      `;
+    }
+
+    analyzeBtn.addEventListener("click", async () => {
+      const text = inputText.value.trim();
+      const selectedDays = Number(days.value || 30);
+      const selectedModel = "gemini-3-flash-preview";
+
+      if (!text) {
+        setStatus('error', 'Please paste text first.');
+        return;
+      }
+
+      clearStatus();
+      analyzeBtn.disabled = true;
+      analyzeBtn.textContent = 'Analyzing...';
+      themesOutput.innerHTML = '<div class="result-card muted">Loading...</div>';
+      biasOutput.innerHTML = '<div class="result-card muted">Loading...</div>';
+
+      try {
+        const [themesData, biasData] = await Promise.all([
+          postJson(`${API_BASE}/themes-and-trends`, {
+            notes: text,
+            days_back: selectedDays,
+          }),
+          postJson(`${API_BASE}/bias-score`, {
+            script: text,
+          }),
+        ]);
+
+        renderThemes(themesData);
+        renderBias(biasData);
+        setStatus('success', 'Analysis complete.');
+      } catch (err) {
+        const message = err?.message || 'Something went wrong.';
+        setStatus('error', message);
+        themesOutput.innerHTML = `<div class="result-card muted">${escapeHtml(message)}</div>`;
+        biasOutput.innerHTML = `<div class="result-card muted">${escapeHtml(message)}</div>`;
+      } finally {
+        analyzeBtn.disabled = false;
+        analyzeBtn.textContent = 'Analyze with real-world context';
+      }
+    });
   </script>
 </body>
 </html>
