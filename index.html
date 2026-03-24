@@ -37,7 +37,7 @@
     a:hover { text-decoration: underline; }
 
     .wrap {
-      max-width: 1150px;
+      max-width: 1280px;
       margin: 0 auto;
       padding: 28px 18px 40px;
     }
@@ -84,15 +84,15 @@
       font-size: 0.9rem;
     }
 
-    .dashboard {
-      display: grid;
-      gap: 18px;
-      grid-template-columns: 1fr;
-    }
-
     .panel-grid {
       display: grid;
-      grid-template-columns: 0.95fr 1.05fr;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 18px;
       align-items: start;
     }
@@ -160,13 +160,13 @@
 
     .control-row {
       display: grid;
-      grid-template-columns: 1fr 180px;
+      grid-template-columns: 180px 1fr;
       gap: 12px;
       margin-top: 14px;
+      align-items: end;
     }
 
     .actions {
-      margin-top: 14px;
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
@@ -188,12 +188,6 @@
       color: #07101f;
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
       min-width: 260px;
-    }
-
-    .secondary {
-      color: var(--text);
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
     }
 
     .status {
@@ -285,6 +279,13 @@
     .tag.good { color: var(--good); }
     .tag.warn { color: var(--warn); }
     .tag.bad { color: var(--danger); }
+    .tag.score-0 { color: #14532d; }
+    .tag.score-1 { color: #86efac; }
+    .tag.score-2 { color: #facc15; }
+    .tag.score-3 { color: #fb923c; }
+    .tag.score-4 { color: #ea580c; }
+    .tag.score-5 { color: #ef4444; }
+    .tag.score-na { color: var(--muted); }
 
     .score-grid {
       display: grid;
@@ -324,7 +325,7 @@
     }
 
     @media (max-width: 920px) {
-      .hero, .panel-grid, .control-row, .score-grid {
+      .hero, .results-grid, .control-row, .score-grid {
         grid-template-columns: 1fr;
       }
 
@@ -344,7 +345,7 @@
       <div>
         <h1>Analyze with real-world context</h1>
         <p class="subtitle">
-          Grounding your script in real-world context. 
+          Grounding your script in real-world context.
         </p>
       </div>
     </div>
@@ -352,37 +353,50 @@
     <div class="panel-grid">
       <section class="panel">
         <div class="panel-header">
-          <h2 class="panel-title">Trends dashboard</h2>
-          <p class="panel-sub">How your script relates to current events and topics.</p>
+          <h2 class="panel-title">Input panel</h2>
+          <p class="panel-sub"></p>
         </div>
         <div class="panel-body">
-          <label for="inputText">Shared input</label>
-          <textarea id="inputText" placeholder="Paste notes or a script excerpt here..."></textarea>
+          <label for="inputText"></label>
+          <textarea id="inputText" placeholder="Paste notes or story beats here"></textarea>
 
           <div class="control-row">
             <div>
-              <label for="days">Days back</label>
+              <label for="days">Trend recency</label>
               <select id="days">
                 <option value="30">30 days</option>
                 <option value="50">50 days</option>
                 <option value="100">100 days</option>
               </select>
             </div>
-          </div>
 
-          <div class="actions">
-            <button id="analyzeBtn" class="primary">Analyze</button>
+            <div class="actions">
+              <button id="analyzeBtn" class="primary">Analyze</button>
+            </div>
           </div>
 
           <div id="status" class="status"></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="results-grid" style="margin-top: 18px;">
+      <section class="panel">
+        <div class="panel-header">
+          <h2 class="panel-title">Themes & real-world context</h2>
+          <p class="panel-sub">How your script relates to current events and topics with clickable links.</p>
+        </div>
+        <div class="panel-body results" id="themesOutput">
+          <div class="result-card muted">No theme results yet.</div>
         </div>
       </section>
 
       <section class="panel">
         <div class="panel-header">
           <h2 class="panel-title">Bias dashboard</h2>
-          <p class="panel-sub">Measure action-based and linguistic biases. <br> <br>Scoring:
-0 = none, 1 = minimal, 2 = mild, 3 = moderate, 4 = strong, 5 = pervasive
+          <p class="panel-sub">Measure action-based and linguistic biases.
+<br> <br>
+Scoring: 0 = none, 1 = minimal, 2 = mild, 3 = moderate, 4 = strong, 5 = pervasive
 <br> <br>
 "Insufficient evidence" indicates there is not enough relevant information to provide a score.</p>
         </div>
@@ -391,16 +405,6 @@
         </div>
       </section>
     </div>
-
-    <section class="panel" style="margin-top: 18px;">
-      <div class="panel-header">
-        <h2 class="panel-title">Themes & real-world context</h2>
-        <p class="panel-sub">Three themes with readable context and clickable source links.</p>
-      </div>
-      <div class="panel-body results" id="themesOutput">
-        <div class="result-card muted">No theme results yet.</div>
-      </div>
-    </section>
   </div>
 
   <script>
@@ -483,6 +487,12 @@
       `).join('');
     }
 
+    function scoreClass(score) {
+      const s = String(score);
+      if (["0", "1", "2", "3", "4", "5"].includes(s)) return `score-${s}`;
+      return "score-na";
+    }
+
     function renderBias(data) {
       if (!data) {
         biasOutput.innerHTML = '<div class="result-card muted">No bias results returned.</div>';
@@ -494,15 +504,13 @@
 
       const subdim = (title, item) => {
         const score = item?.score ?? 'n/a';
-        const confidence = item?.confidence ?? 'n/a';
         const evidence = Array.isArray(item?.evidence) ? item.evidence : [];
 
         return `
           <div class="bias-item">
             <h4 class="bias-name">${escapeHtml(title)}</h4>
             <div class="meta-row">
-              <span class="tag">Score: ${escapeHtml(score)}</span>
-              <span class="tag">Confidence: ${escapeHtml(confidence)}</span>
+              <span class="tag ${scoreClass(score)}">Score: ${escapeHtml(score)}</span>
             </div>
             <div class="small" style="margin-top: 10px;">Evidence</div>
             <div class="bias-copy" style="margin-top: 6px;">
@@ -550,7 +558,6 @@
     analyzeBtn.addEventListener("click", async () => {
       const text = inputText.value.trim();
       const selectedDays = Number(days.value || 30);
-      const selectedModel = "gemini-3-flash-preview";
 
       if (!text) {
         setStatus('error', 'Please paste text first.');
